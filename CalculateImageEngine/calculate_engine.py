@@ -17,9 +17,9 @@ class CalculateImageEngine:
         # 3D 모델 좌표
         self.obj_points = np.array([
             [0,           0,            0         ], # 원점
-            [0,           0,            edgeLength], # Z축 끝점 
-            [0,           edgeLength,   0         ], # Y축 끝점 
             [edgeLength,  0,            0         ], # X축 끝점 
+            [0,           edgeLength,   0         ], # Y축 끝점 
+            [0,           0,            edgeLength], # Z축 끝점 
         ], dtype=np.float32)
 
         # Blender 카메라 내부 행렬 (K)
@@ -99,6 +99,8 @@ class CalculateImageEngine:
             deltaMotion = self.__get_trace_data(image, image_points[index+1])
             self.delta_motions.append(deltaMotion)
 
+            # print(f'deltaMotion : {deltaMotion}')
+
     def get_distance(self):
         if len(self.delta_motions) == 0:
             return 0
@@ -143,22 +145,24 @@ if __name__ == "__main__":
     ], dtype=np.float32)
 
     # 이동 (Y : 2m, 상대좌표)
-    # image5_points = np.array([
-    #     [885.0, 445.0],  # (0,0,0)
-    #     [644.0, 668.0],   # (6,0,0)
-    #     [1233.0, 581.0],  # (0,6,0)
-    #     [877.0, 100.0],  # (0,0,6)
-    # ], dtype=np.float32)
-
-    # 회전 + 이동 (Y : 2m, Z : -45도, 상대좌표)
     image5_points = np.array([
         [885.0, 445.0],  # (0,0,0)
-        [872.0, 708.0],   # (6,0,0)
-        [1261.0, 394.0],  # (0,6,0)
+        [644.0, 668.0],   # (6,0,0)
+        [1233.0, 581.0],  # (0,6,0)
         [877.0, 100.0],  # (0,0,6)
     ], dtype=np.float32)
 
+    # 회전 + 이동 (Y : 2m, Z : -45도, 상대좌표)
+    # image5_points = np.array([
+    #     [885.0, 445.0],  # (0,0,0)
+    #     [872.0, 708.0],   # (6,0,0)
+    #     [1261.0, 394.0],  # (0,6,0)
+    #     [877.0, 100.0],  # (0,0,6)
+    # ], dtype=np.float32)
+
     image_points = [image1_points, image4_points, image5_points]
+    # image_points = [image1_points, image4_points]
+    # image_points = [image1_points, image5_points]
     observer.calculate_images(image_points)
     print(f'distance : {observer.get_distance()}')
 

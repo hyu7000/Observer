@@ -1,0 +1,8 @@
+# 루트 폴더에 있는 동영상 파일 무시 (확장자 mp4, avi 등)
+/*.mp4
+/*.avi
+/*.mov
+/*.mkv
+
+# output_images 폴더 내부 전체 무시
+/output_images/
