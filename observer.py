@@ -86,39 +86,6 @@ class Observer:
         stacked = np.stack(sublist, axis=0)  # shape: (T, N, 3)
         return np.mean(stacked, axis=0)      # shape: (N, 3)
 
-    def __correct_keypoints_sequence(self, image_points_list, threshold=1, n=1):
-        """
-        image_points_list: List of np.array, each of shape (4, 2)
-        threshold: distance threshold for correction
-        n: number of frames before and after to average from (default=1)
-        Returns: corrected list of np.array
-        """
-        corrected_list = []
-
-        total_frames = len(image_points_list)
-
-        for idx in range(total_frames):
-            if idx < n or idx >= total_frames - n:
-                # 처음과 마지막 n개는 보정하지 않고 그대로 사용
-                corrected_list.append(image_points_list[idx])
-                continue
-
-            # 평균 프레임 계산 (앞뒤 n개 평균)
-            surrounding_points = [image_points_list[i] for i in range(idx - n, idx + n + 1) if i != idx]
-            expected_points = sum(surrounding_points) / len(surrounding_points)
-
-            curr = image_points_list[idx]
-            corrected = curr.copy()
-
-            for i in range(4):  # keypoint 0~3
-                error = np.linalg.norm(curr[i] - expected_points[i])
-                if error > threshold:
-                    corrected[i] = expected_points[i]  # 보정
-
-            corrected_list.append(corrected)
-
-        return corrected_list
-
     def parse_video(self, path:str):
         self.fps = self.__get_video_fps(path)
 
@@ -126,13 +93,16 @@ class Observer:
 
         captured_key_points = detect_module.get_key_points()
         # Use 'ascontiguousarray' because OpenCV requires contiguous memory
-        filtered_key_points = [np.ascontiguousarray(kp[:, :-1], dtype=np.float32) for kp in captured_key_points]  # 각 NumPy 배열에서 마지막 열 제거 
-        self.key_points = self.__correct_keypoints_sequence(filtered_key_points)
+        filtered_key_points = [np.ascontiguousarray(kp[:, :-1], dtype=np.float32) for kp in captured_key_points]  # 각 NumPy 배열에서 마지막 열 제거         
+        self.key_points = filtered_key_points 
 
         self.cal_imag_engine.calculate_images(self.key_points)
 
     def get_distance(self):
         return self.cal_imag_engine.get_distance()
+    
+    def get_angle(self):
+        return self.cal_imag_engine.get_angle()
     
     def get_displacement(self):
         if self.key_points is None:
@@ -146,6 +116,15 @@ class Observer:
         self.cal_imag_engine.calculate_images(avg_key_points)
 
         return self.cal_imag_engine.get_distance()
+    
+    # 디버깅용 함수
+    def debug_print_keypoints(self):
+        if self.key_points is None:
+            print("No key points available.")
+            return
+        
+        for idx, keypoint in enumerate(self.key_points):
+            print(f"Frame {keypoint}")
 
 if __name__ == "__main__":
     import time
@@ -161,12 +140,15 @@ if __name__ == "__main__":
     import os
     start = time.perf_counter()
     base_path = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(base_path, "Phone_White_100mm_1.mp4")
+    file_path = os.path.join(base_path, "Blender_45deg_Rotate.mp4")
 
     observer = Observer(6, camera_matrix)
     observer.parse_video(file_path)
     print(f"Distance : {observer.get_distance()}")
+    print(f"Angle : {observer.get_angle()}")
     print(f"Displacement : {observer.get_displacement()}")
+
+    observer.debug_print_keypoints()
 
     # print(observer.get_camera_names())
 

@@ -21,7 +21,7 @@ class DetectModule:
         self.cap = cv2.VideoCapture(input_video_path)  # 웹캠을 사용하려면 `video_path = 0`으로 변경
 
         # 관절 위치 저장을 위한 딕셔너리
-        self.alpha = 0.2  # 지수 이동 평균 가중치 (0.1~0.3 추천)
+        self.alpha = 0.3  # 지수 이동 평균 가중치 (0.1~0.3 추천)
         self.smoothed_keypoints = {}
 
         # 감지된 key의 좌표 저장 리스트
@@ -92,7 +92,7 @@ class DetectModule:
                 img = result.plot()  # 관절이 표시된 이미지 생성
 
              # 이미지 저장
-            if img is not None:
+            if img is not None and DetectModule.IS_DEBUG_MODE:
                 img_filename = os.path.join(self.output_dir, f"frame_{frame_count:04d}.jpg")
                 cv2.imwrite(img_filename, img)  # 이미지 파일로 저장
                 frame_count += 1  # 프레임 번호 증가

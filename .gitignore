@@ -6,3 +6,6 @@
 
 # output_images 폴더 내부 전체 무시
 /output_images/
+
+# DetectRefCube 폴더 내부의 mp4 파일 무시
+/DetectRefCube/*.mp4
